@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inferping-probe
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: inferping-probe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: inferping-probe
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: inferping-probe
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: probe
+          image: ghcr.io/inferping/inferping-probe:latest
+          args: ["--config", "/etc/inferping/inferping.yaml"]
+          env:
+            - name: INFERPING_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: inferping-secret
+                  key: api-key
+            - name: LLM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: inferping-secret
+                  key: llm-api-key
+                  optional: true
+            - name: MCP_BEARER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: inferping-secret
+                  key: mcp-bearer-token
+                  optional: true
+            - name: INFERPING_REGION
+              value: "k8s-ai-cluster-eu"
+          resources:
+            requests:
+              cpu: 15m
+              memory: 24Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: config
+              mountPath: /etc/inferping
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: inferping-probe-config

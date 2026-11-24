@@ -1,0 +1,43 @@
+# Example configuration for inferping-probe
+# Pushes internal AI gateway, 1-token LLM streaming TTFT, and MCP Streamable HTTP (2025-03-26) metrics
+# outbound via OpenTelemetry (OTLP/HTTP) without ever exposing your LLM or MCP API keys outside your VPC.
+# Docs & managed EU platform: https://inferping.eu
+
+endpoint: "https://app.inferping.eu"
+api_key: "${INFERPING_API_KEY}"
+region: "vpc-gpu-eu-01"
+interval: "60s"
+
+checks:
+  - name: "Internal vLLM Inference Cluster"
+    group: "Sovereign-AI-Backends"
+    kind: "llm"
+    target: "https://vllm.internal.company.eu/v1/chat/completions"
+    model: "mistral-small-latest"
+    auth_env: "LLM_API_KEY"
+    timeout: "15s"
+    # Optional custom root CA for internal corporate PKI:
+    # tls_ca_file: "/etc/inferping/internal-ca.pem"
+
+  - name: "Internal Customer-Support MCP Server"
+    group: "Internal-MCP-Agents"
+    kind: "mcp"
+    target: "https://mcp.internal.company.eu/mcp"
+    auth_env: "MCP_BEARER_TOKEN"
+    expect_tools: 3
+    # Optional 16-hex SHA-256 tool schema lock hash (detects silent MCP tool/schema drift):
+    # expect_schema_hash: "8f3a1c90e4b27d11"
+    timeout: "10s"
+
+  - name: "Public MCP Reverse-Proxy Auth Gate"
+    group: "External-Gates"
+    kind: "mcp-gate"
+    target: "https://mcp.company.eu/mcp"
+    interval: "30s"
+
+  - name: "Internal Qdrant Vector Store"
+    group: "RAG-Storage"
+    kind: "http"
+    target: "http://qdrant.internal.company.eu:6333/healthz"
+    keyword: "ok"
+    interval: "30s"

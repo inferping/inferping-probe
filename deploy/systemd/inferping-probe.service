@@ -1,0 +1,21 @@
+[Unit]
+Description=InferPing Zero-Custody Internal AI, LLM & MCP OpenTelemetry Probe
+Documentation=https://github.com/inferping/inferping-probe
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+DynamicUser=yes
+EnvironmentFile=-/etc/inferping/inferping.env
+ExecStart=/usr/local/bin/inferping-probe --config /etc/inferping/inferping.yaml
+Restart=always
+RestartSec=5
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target
