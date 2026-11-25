@@ -4,9 +4,9 @@
 [![GHCR Container](https://img.shields.io/badge/ghcr.io-inferping%2Finferping--probe-38BDF8)](https://github.com/inferping/inferping-probe/pkgs/container/inferping-probe)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache%202.0-34D399)](./LICENSE)
 
-Lightweight, zero-dependency, zero-custody internal AI, LLM & Model Context Protocol (`MCP`) synthetic monitoring probe written in pure Go. Runs inside private Kubernetes clusters, GPU VPC subnets, Docker hosts, or corporate LANs and pushes 1-token streaming LLM Time-to-First-Token (`TTFT`), Inter-Token Latency (`ITL`), rate-limit headroom, MCP Streamable HTTP (`2025-03-26`) `tools/list` schema drift, and MCP auth-gate lock checks outbound via standard **OpenTelemetry (`OTLP/HTTP`)**.
+Lightweight, zero-dependency, zero-custody internal AI, LLM, Model Context Protocol (`MCP`), and **Anonymized Shadow-AI Discovery** probe written in pure Go. Runs inside private Kubernetes clusters, GPU VPC subnets, Docker hosts, or corporate LANs (including **100% airgapped / offline networks**) and exports 1-token streaming LLM Time-to-First-Token (`TTFT`), Inter-Token Latency (`ITL`), rate-limit headroom, MCP Streamable HTTP (`2025-03-26`) `tools/list` schema drift, MCP auth-gate lock checks, and anonymized Shadow-AI tool counters via standard **OpenTelemetry (`OTLP/HTTP`)**.
 
-Built for **[InferPing](https://inferping.eu)** (10-second European AI gateway, LLM edge latency, and MCP server security watchpost, 100% hosted in the EU) and compatible with **[OTelPing](https://otelping.eu)** and any standard OpenTelemetry Collector (`/v1/metrics`).
+Built for **[InferPing](https://inferping.eu)** (60-second European AI gateway, MCP security, and Shadow-AI governance watchpost, 100% hosted in the EU) and compatible with **[OTelPing](https://otelping.eu)**, **[Vallocor](https://vallocor.eu)**, and any standard OpenTelemetry Collector (`/v1/metrics`).
 
 ## Why `inferping-probe`?
 
@@ -19,6 +19,7 @@ Built for **[InferPing](https://inferping.eu)** (10-second European AI gateway, 
   3. **`mcp-gate`**: Sends an unauthenticated JSON-RPC 2.0 `initialize` request and passes only when the MCP server properly rejects unauthenticated callers (`HTTP 401`, `403`, `404`, or `405`). Alerts immediately if an MCP server ever responds `200 OK` without authentication.
   4. **`http`**: Standard HTTP/HTTPS endpoint check with W3C `traceparent`, DNS/TCP/TLS/TTFB breakdown, X.509 certificate expiry tracking, and custom internal CA support (`tls_ca_file`).
   5. **`tcp` / `dns`**: Raw TCP/TLS port checks (for internal Qdrant, Milvus, Redis, PostgreSQL) and split-horizon DNS checks.
+  6. **`ai-discovery` (GDPR & Works-Council-Safe Shadow-AI Inventory + Airgapped Ready)**: Tails office DNS resolver logs (`CoreDNS`, `Bind9`, `Unbound`, `dnsmasq`, `Pi-hole`, `AdGuard`, `Windows DNS`) or egress firewall syslogs, matches against **170+ curated AI domains** ([`catalogue/ai-tools.json`](./catalogue/ai-tools.json) compiled into the binary AND auto-synced every 12h from `https://app.inferping.eu/v1/ai-catalogue.json` unless `-airgapped` is passed), strips employee client IPs in memory immediately, and exports 60s counters (`inferping.ai.discovery.hits`).
 
 ## Quickstart (Zero Config File)
 
@@ -112,7 +113,7 @@ Each check emits a `ResourceMetrics` entry (`service.name`, `service.group`, `pr
 
 ## Related European Platforms
 
-- **[InferPing (`inferping.eu`)](https://inferping.eu)**: 10-second European AI gateway, LLM edge latency, and `#mcp-gate` security monitoring (`EUR 39/mo`).
+- **[InferPing (`inferping.eu`)](https://inferping.eu)**: 60-second European AI gateway, 1-token LLM TTFT, `#mcp-gate` security monitoring (`Pro EUR 39/mo`), and anonymized Shadow-AI governance (`Governance EUR 149/mo`).
 - **[OTelPing (`otelping.eu`)](https://otelping.eu)** & **[`otelping-probe`](https://github.com/otelping/otelping-probe)**: 10-second European web, load-balancer, DNS, and cron uptime monitoring with native OpenTelemetry (`EUR 39/mo`).
 - **[Vallocor (`vallocor.eu`)](https://vallocor.eu)**: Independent European cybersecurity watchpost (`Outpost` / `Sentinel` / `Bastion`) and on-site `Vallocor Pulse` sensor alongside SMEs and their IT partners.
 

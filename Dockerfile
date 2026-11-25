@@ -1,9 +1,10 @@
 FROM golang:1.23-alpine AS builder
 WORKDIR /src
 COPY go.mod ./
+COPY catalogue ./catalogue
 COPY cmd ./cmd
 COPY internal ./internal
-ARG VERSION=1.0.0
+ARG VERSION=1.1.0
 RUN CLEAN_VER="${VERSION#v}" && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w -X main.version=${CLEAN_VER}" -o /out/inferping-probe ./cmd/inferping-probe
 
 FROM gcr.io/distroless/static-debian12:nonroot

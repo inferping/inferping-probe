@@ -1,0 +1,1055 @@
+{
+  "version": "2026.11.25",
+  "updated_at": "2026-11-25T13:45:00Z",
+  "source": "https://app.inferping.eu/v1/ai-catalogue.json",
+  "git_mirror": "https://github.com/inferping/inferping-probe/blob/main/catalogue/ai-tools.json",
+  "tool_count": 67,
+  "domain_count": 174,
+  "tools": [
+    {
+      "tool_id": "mistral-le-chat",
+      "display_name": "Mistral Le Chat",
+      "vendor": "Mistral AI (Paris, FR)",
+      "category": "LLM Chat & Assistants",
+      "region": "EU",
+      "primary_domain": "chat.mistral.ai",
+      "domains": [
+        "chat.mistral.ai",
+        "console.mistral.ai",
+        "mistral.ai"
+      ],
+      "default_policy": "approved",
+      "risk_note": "EU headquarters (France), GDPR native data residency.",
+      "suggested_alternative": "Approved European AI assistant"
+    },
+    {
+      "tool_id": "chatgpt-web",
+      "display_name": "OpenAI ChatGPT (Web)",
+      "vendor": "OpenAI (US)",
+      "category": "LLM Chat & Assistants",
+      "region": "US",
+      "primary_domain": "chatgpt.com",
+      "domains": [
+        "chatgpt.com",
+        "chat.openai.com",
+        "ab.chatgpt.com",
+        "files.oaiusercontent.com"
+      ],
+      "default_policy": "approved",
+      "risk_note": "Verify workspace uses ChatGPT Team/Enterprise with EU DPA and training opt-out.",
+      "suggested_alternative": "ChatGPT Team / Enterprise or Mistral Le Chat Pro"
+    },
+    {
+      "tool_id": "claude-web",
+      "display_name": "Anthropic Claude (Web)",
+      "vendor": "Anthropic (US)",
+      "category": "LLM Chat & Assistants",
+      "region": "US",
+      "primary_domain": "claude.ai",
+      "domains": [
+        "claude.ai",
+        "console.anthropic.com"
+      ],
+      "default_policy": "approved",
+      "risk_note": "Verify Claude Team/Enterprise plan for commercial data protection.",
+      "suggested_alternative": "Claude Team / Enterprise"
+    },
+    {
+      "tool_id": "microsoft-copilot",
+      "display_name": "Microsoft Copilot",
+      "vendor": "Microsoft (US / EU Boundary)",
+      "category": "LLM Chat & Assistants",
+      "region": "US",
+      "primary_domain": "copilot.microsoft.com",
+      "domains": [
+        "copilot.microsoft.com",
+        "sydney.bing.com",
+        "edgeservices.bing.com",
+        "m365.cloud.microsoft"
+      ],
+      "default_policy": "approved",
+      "risk_note": "Ensure staff sign in with Entra ID for Commercial Data Protection.",
+      "suggested_alternative": "Microsoft 365 Copilot (Entra ID signed-in)"
+    },
+    {
+      "tool_id": "google-gemini",
+      "display_name": "Google Gemini & AI Studio",
+      "vendor": "Google (US)",
+      "category": "LLM Chat & Assistants",
+      "region": "US",
+      "primary_domain": "gemini.google.com",
+      "domains": [
+        "gemini.google.com",
+        "bard.google.com",
+        "aistudio.google.com",
+        "notebooklm.google.com"
+      ],
+      "default_policy": "review",
+      "risk_note": "Consumer accounts allow human reviewer inspection unless using Google Workspace Enterprise.",
+      "suggested_alternative": "Google Workspace Gemini Enterprise or Mistral Le Chat"
+    },
+    {
+      "tool_id": "perplexity-ai",
+      "display_name": "Perplexity AI Search",
+      "vendor": "Perplexity AI (US)",
+      "category": "LLM Chat & Assistants",
+      "region": "US",
+      "primary_domain": "perplexity.ai",
+      "domains": [
+        "perplexity.ai",
+        "www.perplexity.ai",
+        "labs.perplexity.ai"
+      ],
+      "default_policy": "review",
+      "risk_note": "Consumer search queries and uploaded PDFs may be retained outside the EU.",
+      "suggested_alternative": "Perplexity Enterprise Pro or internal RAG"
+    },
+    {
+      "tool_id": "deepseek-chat",
+      "display_name": "DeepSeek Chat (Web)",
+      "vendor": "DeepSeek (Hangzhou, CN)",
+      "category": "LLM Chat & Assistants",
+      "region": "CN",
+      "primary_domain": "chat.deepseek.com",
+      "domains": [
+        "chat.deepseek.com",
+        "deepseek.com",
+        "www.deepseek.com"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Prompts and uploaded files are stored in CN jurisdiction and used for model training.",
+      "suggested_alternative": "Use Mistral Le Chat Pro or self-hosted EU weights"
+    },
+    {
+      "tool_id": "qwen-chat",
+      "display_name": "Qwen Chat / Tongyi (Web)",
+      "vendor": "Alibaba Cloud (CN)",
+      "category": "LLM Chat & Assistants",
+      "region": "CN",
+      "primary_domain": "chat.qwen.ai",
+      "domains": [
+        "chat.qwen.ai",
+        "qwenlm.ai",
+        "tongyi.aliyun.com",
+        "qianwen.aliyun.com"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Hosted consumer chat service in CN/non-EEA jurisdiction without corporate EU DPA.",
+      "suggested_alternative": "Self-host Qwen weights in EU VPC or use Mistral Le Chat"
+    },
+    {
+      "tool_id": "moonshot-kimi",
+      "display_name": "Kimi AI Assistant",
+      "vendor": "Moonshot AI (Beijing, CN)",
+      "category": "LLM Chat & Assistants",
+      "region": "CN",
+      "primary_domain": "kimi.moonshot.cn",
+      "domains": [
+        "kimi.moonshot.cn",
+        "kimi.ai",
+        "www.kimi.com",
+        "api.moonshot.cn"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Long-context PDF upload assistant hosted in CN jurisdiction.",
+      "suggested_alternative": "Use approved EU enterprise assistant"
+    },
+    {
+      "tool_id": "baidu-ernie",
+      "display_name": "Baidu ERNIE Bot (Yiyan)",
+      "vendor": "Baidu (Beijing, CN)",
+      "category": "LLM Chat & Assistants",
+      "region": "CN",
+      "primary_domain": "yiyan.baidu.com",
+      "domains": [
+        "yiyan.baidu.com",
+        "ernie.baidu.com"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Consumer AI assistant outside EU GDPR adequacy framework.",
+      "suggested_alternative": "Use Mistral Le Chat Pro or ChatGPT Team"
+    },
+    {
+      "tool_id": "zhipu-chatglm",
+      "display_name": "ChatGLM / Zhipu AI",
+      "vendor": "Zhipu AI (Beijing, CN)",
+      "category": "LLM Chat & Assistants",
+      "region": "CN",
+      "primary_domain": "chatglm.cn",
+      "domains": [
+        "chatglm.cn",
+        "open.bigmodel.cn"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "External CN model platform without EU data residency.",
+      "suggested_alternative": "Use approved EU AI assistant"
+    },
+    {
+      "tool_id": "doubao-bytedance",
+      "display_name": "Doubao / Coze AI",
+      "vendor": "ByteDance (CN / SG)",
+      "category": "LLM Chat & Assistants",
+      "region": "CN",
+      "primary_domain": "coze.com",
+      "domains": [
+        "coze.com",
+        "www.coze.com",
+        "doubao.com",
+        "cici.com"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Consumer bot builder and chat platform without EU sovereign data boundary.",
+      "suggested_alternative": "Use internal agent platform or Microsoft Copilot Studio"
+    },
+    {
+      "tool_id": "xai-grok",
+      "display_name": "xAI Grok",
+      "vendor": "xAI (US)",
+      "category": "LLM Chat & Assistants",
+      "region": "US",
+      "primary_domain": "grok.com",
+      "domains": [
+        "grok.com",
+        "www.grok.com",
+        "api.x.ai"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Consumer social AI assistant without standard EU enterprise DPA.",
+      "suggested_alternative": "Use Mistral Le Chat Pro or ChatGPT Team"
+    },
+    {
+      "tool_id": "quora-poe",
+      "display_name": "Poe Multi-Model Chat",
+      "vendor": "Quora (US)",
+      "category": "LLM Chat & Assistants",
+      "region": "US",
+      "primary_domain": "poe.com",
+      "domains": [
+        "poe.com",
+        "www.poe.com"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Consumer aggregator routing prompts across third-party model hosts without enterprise DPA.",
+      "suggested_alternative": "Use approved company AI assistant"
+    },
+    {
+      "tool_id": "character-ai",
+      "display_name": "Character.AI",
+      "vendor": "Character Technologies (US)",
+      "category": "LLM Chat & Assistants",
+      "region": "US",
+      "primary_domain": "character.ai",
+      "domains": [
+        "character.ai",
+        "beta.character.ai"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Consumer entertainment chatbot unsuitable for corporate data.",
+      "suggested_alternative": "Use approved company AI assistant"
+    },
+    {
+      "tool_id": "you-ai",
+      "display_name": "You.com AI Search",
+      "vendor": "You.com (US)",
+      "category": "LLM Chat & Assistants",
+      "region": "US",
+      "primary_domain": "you.com",
+      "domains": [
+        "you.com",
+        "api.ydc-index.io"
+      ],
+      "default_policy": "review",
+      "risk_note": "AI search assistant; verify zero-retention Team plan before uploading internal documents.",
+      "suggested_alternative": "Approved enterprise AI assistant"
+    },
+    {
+      "tool_id": "meta-ai",
+      "display_name": "Meta AI Web",
+      "vendor": "Meta Platforms (US)",
+      "category": "LLM Chat & Assistants",
+      "region": "US",
+      "primary_domain": "meta.ai",
+      "domains": [
+        "meta.ai",
+        "www.meta.ai"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Consumer AI assistant without B2B enterprise data-processing terms.",
+      "suggested_alternative": "Use Mistral Le Chat Pro or self-hosted Llama in EU"
+    },
+    {
+      "tool_id": "inflection-pi",
+      "display_name": "Pi AI Assistant",
+      "vendor": "Inflection AI (US)",
+      "category": "LLM Chat & Assistants",
+      "region": "US",
+      "primary_domain": "pi.ai",
+      "domains": [
+        "pi.ai"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Consumer personal AI assistant without corporate DPA.",
+      "suggested_alternative": "Use approved company AI assistant"
+    },
+    {
+      "tool_id": "github-copilot",
+      "display_name": "GitHub Copilot",
+      "vendor": "GitHub / Microsoft (US)",
+      "category": "AI Coding & Agents",
+      "region": "US",
+      "primary_domain": "api.githubcopilot.com",
+      "domains": [
+        "api.githubcopilot.com",
+        "copilot-proxy.githubusercontent.com",
+        "githubcopilot.com",
+        "copilot-telemetry.githubusercontent.com"
+      ],
+      "default_policy": "approved",
+      "risk_note": "Ensure Copilot Business/Enterprise seat with telemetry and code-snippet retention disabled.",
+      "suggested_alternative": "GitHub Copilot Business"
+    },
+    {
+      "tool_id": "cursor-ide",
+      "display_name": "Cursor AI Code Editor",
+      "vendor": "Anysphere (US)",
+      "category": "AI Coding & Agents",
+      "region": "US",
+      "primary_domain": "api2.cursor.sh",
+      "domains": [
+        "api2.cursor.sh",
+        "api3.cursor.sh",
+        "cursor.sh",
+        "cursor.com",
+        "api.cursor.com"
+      ],
+      "default_policy": "review",
+      "risk_note": "Requires Privacy Mode enforced organization-wide so source code is not stored remotely.",
+      "suggested_alternative": "Cursor Business (Privacy Mode locked) or Copilot Business"
+    },
+    {
+      "tool_id": "windsurf-codeium",
+      "display_name": "Windsurf / Codeium",
+      "vendor": "Codeium (US)",
+      "category": "AI Coding & Agents",
+      "region": "US",
+      "primary_domain": "windsurf.com",
+      "domains": [
+        "windsurf.com",
+        "codeium.com",
+        "server.codeium.com",
+        "api.codeium.com"
+      ],
+      "default_policy": "review",
+      "risk_note": "Verify zero-data-retention telemetry flag on developer workstations.",
+      "suggested_alternative": "Approved enterprise coding assistant"
+    },
+    {
+      "tool_id": "lovable-dev",
+      "display_name": "Lovable AI App Builder",
+      "vendor": "Lovable (Stockholm, SE)",
+      "category": "AI Coding & Agents",
+      "region": "EU",
+      "primary_domain": "lovable.dev",
+      "domains": [
+        "lovable.dev",
+        "api.lovable.dev",
+        "gptengineer.app"
+      ],
+      "default_policy": "review",
+      "risk_note": "EU vendor (Sweden); verify no production database credentials or secrets are pasted into prompts.",
+      "suggested_alternative": "Lovable Team (no production secrets)"
+    },
+    {
+      "tool_id": "bolt-new",
+      "display_name": "Bolt.new / StackBlitz AI",
+      "vendor": "StackBlitz (US)",
+      "category": "AI Coding & Agents",
+      "region": "US",
+      "primary_domain": "bolt.new",
+      "domains": [
+        "bolt.new"
+      ],
+      "default_policy": "review",
+      "risk_note": "Browser-based full-stack generator; ensure proprietary backend code is not uploaded to public sandboxes.",
+      "suggested_alternative": "Approved internal IDE assistant"
+    },
+    {
+      "tool_id": "vercel-v0",
+      "display_name": "Vercel v0 UI Generator",
+      "vendor": "Vercel (US)",
+      "category": "AI Coding & Agents",
+      "region": "US",
+      "primary_domain": "v0.dev",
+      "domains": [
+        "v0.dev",
+        "v0.app"
+      ],
+      "default_policy": "review",
+      "risk_note": "Verify generated UI prompts do not include internal API schemas or customer data.",
+      "suggested_alternative": "v0 Enterprise / Private mode"
+    },
+    {
+      "tool_id": "replit-agent",
+      "display_name": "Replit AI Agent",
+      "vendor": "Replit (US)",
+      "category": "AI Coding & Agents",
+      "region": "US",
+      "primary_domain": "replit.com",
+      "domains": [
+        "replit.com",
+        "sp.replit.com",
+        "eval.replit.com"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Cloud IDE workspaces are public on free tiers; risk of leaking proprietary code and .env secrets.",
+      "suggested_alternative": "Use local IDE with approved coding assistant"
+    },
+    {
+      "tool_id": "devin-cognition",
+      "display_name": "Devin Autonomous Engineer",
+      "vendor": "Cognition AI (US)",
+      "category": "AI Coding & Agents",
+      "region": "US",
+      "primary_domain": "devin.ai",
+      "domains": [
+        "devin.ai",
+        "app.devin.ai",
+        "cognition.ai"
+      ],
+      "default_policy": "review",
+      "risk_note": "Autonomous coding agent requiring repository and shell access; requires security review.",
+      "suggested_alternative": "Approved internal CI/CD coding agent"
+    },
+    {
+      "tool_id": "tabnine-ai",
+      "display_name": "Tabnine Coding Assistant",
+      "vendor": "Tabnine (IL / US)",
+      "category": "AI Coding & Agents",
+      "region": "GLOBAL",
+      "primary_domain": "tabnine.com",
+      "domains": [
+        "tabnine.com",
+        "api.tabnine.com"
+      ],
+      "default_policy": "review",
+      "risk_note": "Verify Enterprise private deployment or zero-retention policy.",
+      "suggested_alternative": "GitHub Copilot Business"
+    },
+    {
+      "tool_id": "sourcegraph-cody",
+      "display_name": "Sourcegraph Cody & Amp",
+      "vendor": "Sourcegraph (US)",
+      "category": "AI Coding & Agents",
+      "region": "US",
+      "primary_domain": "sourcegraph.com",
+      "domains": [
+        "sourcegraph.com",
+        "ampcode.com"
+      ],
+      "default_policy": "review",
+      "risk_note": "Ensure Enterprise instance rather than public Sourcegraph.com account.",
+      "suggested_alternative": "GitHub Copilot Business"
+    },
+    {
+      "tool_id": "supermaven-ai",
+      "display_name": "Supermaven Code Completion",
+      "vendor": "Supermaven (US)",
+      "category": "AI Coding & Agents",
+      "region": "US",
+      "primary_domain": "supermaven.com",
+      "domains": [
+        "supermaven.com",
+        "api.supermaven.com"
+      ],
+      "default_policy": "review",
+      "risk_note": "Fast 1M-token context code completion; verify repository retention policy.",
+      "suggested_alternative": "GitHub Copilot Business"
+    },
+    {
+      "tool_id": "jetbrains-ai",
+      "display_name": "JetBrains AI & Junie",
+      "vendor": "JetBrains (Prague, CZ / EU)",
+      "category": "AI Coding & Agents",
+      "region": "EU",
+      "primary_domain": "grazie.ai",
+      "domains": [
+        "grazie.ai",
+        "api.jetbrains.ai"
+      ],
+      "default_policy": "approved",
+      "risk_note": "EU headquarters (Czechia), zero data retention for code training on commercial licenses.",
+      "suggested_alternative": "JetBrains AI Enterprise"
+    },
+    {
+      "tool_id": "trae-ide",
+      "display_name": "Trae AI IDE",
+      "vendor": "ByteDance (SG / CN)",
+      "category": "AI Coding & Agents",
+      "region": "CN",
+      "primary_domain": "trae.ai",
+      "domains": [
+        "trae.ai",
+        "www.trae.ai"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Free AI IDE sending codebase context to non-EEA infrastructure.",
+      "suggested_alternative": "Use VS Code / JetBrains with approved EU/Enterprise assistant"
+    },
+    {
+      "tool_id": "otter-ai",
+      "display_name": "Otter.ai Meeting Recorder",
+      "vendor": "Otter.ai (US)",
+      "category": "Meeting & Transcription Bots",
+      "region": "US",
+      "primary_domain": "otter.ai",
+      "domains": [
+        "otter.ai",
+        "aisense.com"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Joins Teams/Zoom/Meet calls via calendar sync and stores full audio and transcripts in US cloud.",
+      "suggested_alternative": "Use built-in Microsoft Teams / Google Meet enterprise transcription"
+    },
+    {
+      "tool_id": "fireflies-ai",
+      "display_name": "Fireflies.ai Meeting Bot",
+      "vendor": "Fireflies.ai (US)",
+      "category": "Meeting & Transcription Bots",
+      "region": "US",
+      "primary_domain": "fireflies.ai",
+      "domains": [
+        "fireflies.ai",
+        "app.fireflies.ai",
+        "api.fireflies.ai"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "External bot records internal and client meetings and auto-emails transcripts externally.",
+      "suggested_alternative": "Use built-in Microsoft Teams / Meet transcription"
+    },
+    {
+      "tool_id": "read-ai",
+      "display_name": "Read.ai Meeting Assistant",
+      "vendor": "Read AI (US)",
+      "category": "Meeting & Transcription Bots",
+      "region": "US",
+      "primary_domain": "read.ai",
+      "domains": [
+        "read.ai",
+        "app.read.ai"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Viral meeting bot that auto-attaches to employee calendars without central IT approval.",
+      "suggested_alternative": "Disable external meeting bots in Teams / Workspace admin"
+    },
+    {
+      "tool_id": "tldv-io",
+      "display_name": "tl;dv Meeting Recorder",
+      "vendor": "tl;dv (Germany, EU)",
+      "category": "Meeting & Transcription Bots",
+      "region": "EU",
+      "primary_domain": "tldv.io",
+      "domains": [
+        "tldv.io",
+        "app.tldv.io"
+      ],
+      "default_policy": "review",
+      "risk_note": "EU-based meeting recorder; requires explicit participant consent before recording client calls.",
+      "suggested_alternative": "Approved internal meeting transcription"
+    },
+    {
+      "tool_id": "fathom-video",
+      "display_name": "Fathom AI Notetaker",
+      "vendor": "Fathom Video (US)",
+      "category": "Meeting & Transcription Bots",
+      "region": "US",
+      "primary_domain": "fathom.video",
+      "domains": [
+        "fathom.video",
+        "app.fathom.video"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Free external meeting recorder storing full video and audio of business calls in US cloud.",
+      "suggested_alternative": "Use built-in Microsoft Teams / Meet transcription"
+    },
+    {
+      "tool_id": "tactiq-io",
+      "display_name": "Tactiq Chrome Transcription",
+      "vendor": "Tactiq (AU / US)",
+      "category": "Meeting & Transcription Bots",
+      "region": "GLOBAL",
+      "primary_domain": "tactiq.io",
+      "domains": [
+        "tactiq.io",
+        "app.tactiq.io"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Browser extension capturing live meeting captions and forwarding them to external LLMs.",
+      "suggested_alternative": "Use built-in Microsoft Teams / Meet transcription"
+    },
+    {
+      "tool_id": "grain-meeting",
+      "display_name": "Grain AI Meeting Recorder",
+      "vendor": "Grain (US)",
+      "category": "Meeting & Transcription Bots",
+      "region": "US",
+      "primary_domain": "grain.com",
+      "domains": [
+        "grain.com",
+        "grain.co"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "External call recorder syncing customer call clips outside corporate tenant.",
+      "suggested_alternative": "Use approved CRM/Teams recording"
+    },
+    {
+      "tool_id": "krisp-ai",
+      "display_name": "Krisp AI Noise & Notes",
+      "vendor": "Krisp (US)",
+      "category": "Meeting & Transcription Bots",
+      "region": "US",
+      "primary_domain": "krisp.ai",
+      "domains": [
+        "krisp.ai",
+        "api.krisp.ai"
+      ],
+      "default_policy": "review",
+      "risk_note": "Local noise cancellation is safe, but cloud meeting-notes upload transcripts unless disabled.",
+      "suggested_alternative": "Krisp Enterprise (local-only audio mode)"
+    },
+    {
+      "tool_id": "deepl-translate",
+      "display_name": "DeepL Translator & Write",
+      "vendor": "DeepL SE (Cologne, DE)",
+      "category": "Productivity & Docs AI",
+      "region": "EU",
+      "primary_domain": "deepl.com",
+      "domains": [
+        "deepl.com",
+        "www.deepl.com",
+        "api.deepl.com",
+        "api-free.deepl.com",
+        "write.deepl.com"
+      ],
+      "default_policy": "approved",
+      "risk_note": "EU vendor (Germany). Note: DeepL Free retains translated text; use DeepL Pro for confidential docs.",
+      "suggested_alternative": "DeepL Pro (zero text retention)"
+    },
+    {
+      "tool_id": "gamma-app",
+      "display_name": "Gamma AI Presentations",
+      "vendor": "Gamma Tech (US)",
+      "category": "Productivity & Docs AI",
+      "region": "US",
+      "primary_domain": "gamma.app",
+      "domains": [
+        "gamma.app",
+        "api.gamma.app"
+      ],
+      "default_policy": "review",
+      "risk_note": "Popular slide generator; do not upload confidential board financials or customer lists.",
+      "suggested_alternative": "Microsoft Copilot in PowerPoint"
+    },
+    {
+      "tool_id": "grammarly-ai",
+      "display_name": "Grammarly Writing Assistant",
+      "vendor": "Grammarly (US)",
+      "category": "Productivity & Docs AI",
+      "region": "US",
+      "primary_domain": "grammarly.com",
+      "domains": [
+        "grammarly.com",
+        "capi.grammarly.com",
+        "treatment.grammarly.com",
+        "auth.grammarly.com"
+      ],
+      "default_policy": "review",
+      "risk_note": "Browser extension reads all text fields across web apps unless restricted by domain blocklist.",
+      "suggested_alternative": "DeepL Write Pro or Grammarly Business with DPA"
+    },
+    {
+      "tool_id": "jasper-ai",
+      "display_name": "Jasper Marketing AI",
+      "vendor": "Jasper AI (US)",
+      "category": "Productivity & Docs AI",
+      "region": "US",
+      "primary_domain": "jasper.ai",
+      "domains": [
+        "jasper.ai",
+        "app.jasper.ai"
+      ],
+      "default_policy": "review",
+      "risk_note": "Marketing copy platform; use only for public marketing content unless DPA is signed.",
+      "suggested_alternative": "Approved marketing workspace"
+    },
+    {
+      "tool_id": "copy-ai",
+      "display_name": "Copy.ai GTM Workflows",
+      "vendor": "Copy.ai (US)",
+      "category": "Productivity & Docs AI",
+      "region": "US",
+      "primary_domain": "copy.ai",
+      "domains": [
+        "copy.ai",
+        "app.copy.ai"
+      ],
+      "default_policy": "review",
+      "risk_note": "Ensure CRM prospect PII is not exported to unapproved Copy.ai personal accounts.",
+      "suggested_alternative": "Approved enterprise GTM tool"
+    },
+    {
+      "tool_id": "writer-com",
+      "display_name": "Writer Enterprise AI",
+      "vendor": "Writer (US)",
+      "category": "Productivity & Docs AI",
+      "region": "US",
+      "primary_domain": "writer.com",
+      "domains": [
+        "writer.com",
+        "app.writer.com",
+        "api.writer.com"
+      ],
+      "default_policy": "review",
+      "risk_note": "Verify corporate DPA and EU hosting option before uploading internal documents.",
+      "suggested_alternative": "Approved enterprise AI assistant"
+    },
+    {
+      "tool_id": "chatpdf-docs",
+      "display_name": "ChatPDF / PDF.ai Uploaders",
+      "vendor": "Consumer PDF Chat Tools",
+      "category": "Productivity & Docs AI",
+      "region": "GLOBAL",
+      "primary_domain": "chatpdf.com",
+      "domains": [
+        "chatpdf.com",
+        "pdf.ai",
+        "humata.ai",
+        "askyourpdf.com"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Employees frequently upload sensitive contracts and invoices to free PDF-chat websites.",
+      "suggested_alternative": "Use Mistral Le Chat Pro or Microsoft 365 Copilot"
+    },
+    {
+      "tool_id": "elevenlabs-voice",
+      "display_name": "ElevenLabs Voice AI",
+      "vendor": "ElevenLabs (EU / US)",
+      "category": "Voice, Image & Video AI",
+      "region": "US",
+      "primary_domain": "elevenlabs.io",
+      "domains": [
+        "elevenlabs.io",
+        "api.elevenlabs.io"
+      ],
+      "default_policy": "review",
+      "risk_note": "Voice synthesis and cloning; ensure no unconsented employee or customer voice recordings are uploaded.",
+      "suggested_alternative": "ElevenLabs Enterprise with EU DPA"
+    },
+    {
+      "tool_id": "midjourney-image",
+      "display_name": "Midjourney Image AI",
+      "vendor": "Midjourney (US)",
+      "category": "Voice, Image & Video AI",
+      "region": "US",
+      "primary_domain": "midjourney.com",
+      "domains": [
+        "midjourney.com",
+        "www.midjourney.com",
+        "cdn.midjourney.com"
+      ],
+      "default_policy": "review",
+      "risk_note": "Prompts and generated images are public by default unless on Pro Stealth plan.",
+      "suggested_alternative": "Adobe Firefly Enterprise (IP-indemnified)"
+    },
+    {
+      "tool_id": "heygen-video",
+      "display_name": "HeyGen AI Video Avatar",
+      "vendor": "HeyGen (US)",
+      "category": "Voice, Image & Video AI",
+      "region": "US",
+      "primary_domain": "heygen.com",
+      "domains": [
+        "heygen.com",
+        "app.heygen.com"
+      ],
+      "default_policy": "review",
+      "risk_note": "Video avatar generator; requires explicit executive/employee consent for likeness usage.",
+      "suggested_alternative": "Synthesia Enterprise (EU/UK)"
+    },
+    {
+      "tool_id": "synthesia-video",
+      "display_name": "Synthesia AI Video",
+      "vendor": "Synthesia (London, UK / EU)",
+      "category": "Voice, Image & Video AI",
+      "region": "EU",
+      "primary_domain": "synthesia.io",
+      "domains": [
+        "synthesia.io",
+        "app.synthesia.io"
+      ],
+      "default_policy": "approved",
+      "risk_note": "European/UK enterprise AI video platform with GDPR adequacy and SOC 2 controls.",
+      "suggested_alternative": "Synthesia Enterprise"
+    },
+    {
+      "tool_id": "black-forest-flux",
+      "display_name": "Black Forest Labs (FLUX)",
+      "vendor": "Black Forest Labs (Freiburg, DE)",
+      "category": "Voice, Image & Video AI",
+      "region": "EU",
+      "primary_domain": "bfl.ml",
+      "domains": [
+        "bfl.ml",
+        "api.bfl.ml",
+        "blackforestlabs.ai"
+      ],
+      "default_policy": "approved",
+      "risk_note": "European frontier image model provider headquartered in Germany.",
+      "suggested_alternative": "Black Forest Labs EU API"
+    },
+    {
+      "tool_id": "runway-video",
+      "display_name": "Runway Gen-3 Video AI",
+      "vendor": "Runway AI (US)",
+      "category": "Voice, Image & Video AI",
+      "region": "US",
+      "primary_domain": "runwayml.com",
+      "domains": [
+        "runwayml.com",
+        "app.runwayml.com"
+      ],
+      "default_policy": "review",
+      "risk_note": "Creative video generation; do not upload confidential product prototypes on consumer plans.",
+      "suggested_alternative": "Runway Enterprise or Synthesia"
+    },
+    {
+      "tool_id": "suno-udio-music",
+      "display_name": "Suno & Udio AI Audio",
+      "vendor": "Suno / Udio (US)",
+      "category": "Voice, Image & Video AI",
+      "region": "US",
+      "primary_domain": "suno.com",
+      "domains": [
+        "suno.com",
+        "suno.ai",
+        "udio.com"
+      ],
+      "default_policy": "review",
+      "risk_note": "Verify commercial IP licensing rights before using generated audio in public campaigns.",
+      "suggested_alternative": "Licensed stock audio or enterprise plan"
+    },
+    {
+      "tool_id": "kling-hailuo-video",
+      "display_name": "Kling & Hailuo Video AI",
+      "vendor": "Kuaishou / MiniMax (CN)",
+      "category": "Voice, Image & Video AI",
+      "region": "CN",
+      "primary_domain": "klingai.com",
+      "domains": [
+        "klingai.com",
+        "hailuoai.video",
+        "minimaxi.com"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Uploaded source images and video prompts are processed in CN jurisdiction.",
+      "suggested_alternative": "Use Synthesia or Black Forest Labs (EU)"
+    },
+    {
+      "tool_id": "mistral-api",
+      "display_name": "Mistral AI Inference API",
+      "vendor": "Mistral AI (Paris, FR)",
+      "category": "Model APIs & Gateways",
+      "region": "EU",
+      "primary_domain": "api.mistral.ai",
+      "domains": [
+        "api.mistral.ai",
+        "codestral.mistral.ai"
+      ],
+      "default_policy": "approved",
+      "risk_note": "EU sovereign inference gateway (France).",
+      "suggested_alternative": "Approved EU AI Gateway"
+    },
+    {
+      "tool_id": "scaleway-genai",
+      "display_name": "Scaleway Generative APIs",
+      "vendor": "Scaleway SAS (Paris/AMS, EU)",
+      "category": "Model APIs & Gateways",
+      "region": "EU",
+      "primary_domain": "api.scaleway.ai",
+      "domains": [
+        "api.scaleway.ai"
+      ],
+      "default_policy": "approved",
+      "risk_note": "100% European sovereign GPU inference hosted in France/Netherlands.",
+      "suggested_alternative": "Approved EU AI Gateway"
+    },
+    {
+      "tool_id": "nebius-ai",
+      "display_name": "Nebius AI Studio",
+      "vendor": "Nebius N.V. (Amsterdam, NL)",
+      "category": "Model APIs & Gateways",
+      "region": "EU",
+      "primary_domain": "studio.nebius.ai",
+      "domains": [
+        "studio.nebius.ai",
+        "api.studio.nebius.ai"
+      ],
+      "default_policy": "approved",
+      "risk_note": "Amsterdam-headquartered European GPU cloud and inference API.",
+      "suggested_alternative": "Approved EU AI Gateway"
+    },
+    {
+      "tool_id": "aleph-alpha",
+      "display_name": "Aleph Alpha PhariaAI",
+      "vendor": "Aleph Alpha (Heidelberg, DE)",
+      "category": "Model APIs & Gateways",
+      "region": "EU",
+      "primary_domain": "aleph-alpha.com",
+      "domains": [
+        "aleph-alpha.com",
+        "api.aleph-alpha.com"
+      ],
+      "default_policy": "approved",
+      "risk_note": "German sovereign AI platform for regulated public and enterprise workloads.",
+      "suggested_alternative": "Approved EU AI Gateway"
+    },
+    {
+      "tool_id": "openai-api",
+      "display_name": "OpenAI Platform API",
+      "vendor": "OpenAI (US / EU Project Residency)",
+      "category": "Model APIs & Gateways",
+      "region": "US",
+      "primary_domain": "api.openai.com",
+      "domains": [
+        "api.openai.com",
+        "eu.api.openai.com"
+      ],
+      "default_policy": "approved",
+      "risk_note": "Zero data training by default on API; prefer eu.api.openai.com project residency.",
+      "suggested_alternative": "OpenAI API (EU residency) or Azure OpenAI EU"
+    },
+    {
+      "tool_id": "anthropic-api",
+      "display_name": "Anthropic Messages API",
+      "vendor": "Anthropic (US)",
+      "category": "Model APIs & Gateways",
+      "region": "US",
+      "primary_domain": "api.anthropic.com",
+      "domains": [
+        "api.anthropic.com"
+      ],
+      "default_policy": "approved",
+      "risk_note": "Zero training on commercial API traffic; ensure central API key rotation.",
+      "suggested_alternative": "Anthropic Commercial API or Vertex AI EU"
+    },
+    {
+      "tool_id": "openrouter-api",
+      "display_name": "OpenRouter Multi-Model Gateway",
+      "vendor": "OpenRouter (US)",
+      "category": "Model APIs & Gateways",
+      "region": "US",
+      "primary_domain": "openrouter.ai",
+      "domains": [
+        "openrouter.ai"
+      ],
+      "default_policy": "review",
+      "risk_note": "Enforce zero-logging provider routing in OpenRouter account settings.",
+      "suggested_alternative": "OpenRouter (zero-retention providers only)"
+    },
+    {
+      "tool_id": "deepseek-api",
+      "display_name": "DeepSeek Direct API",
+      "vendor": "DeepSeek (Hangzhou, CN)",
+      "category": "Model APIs & Gateways",
+      "region": "CN",
+      "primary_domain": "api.deepseek.com",
+      "domains": [
+        "api.deepseek.com"
+      ],
+      "default_policy": "restricted",
+      "risk_note": "Direct CN API endpoint outside EU GDPR adequacy framework.",
+      "suggested_alternative": "Host DeepSeek weights in EU VPC or use Mistral API"
+    },
+    {
+      "tool_id": "huggingface-hub",
+      "display_name": "Hugging Face Hub & Inference",
+      "vendor": "Hugging Face (FR / US)",
+      "category": "Model APIs & Gateways",
+      "region": "EU",
+      "primary_domain": "huggingface.co",
+      "domains": [
+        "huggingface.co",
+        "api-inference.huggingface.co",
+        "router.huggingface.co"
+      ],
+      "default_policy": "approved",
+      "risk_note": "Verify checksums and model card licenses before pulling weights into production.",
+      "suggested_alternative": "Hugging Face Enterprise Hub"
+    },
+    {
+      "tool_id": "groq-api",
+      "display_name": "Groq LPU Inference API",
+      "vendor": "Groq (US)",
+      "category": "Model APIs & Gateways",
+      "region": "US",
+      "primary_domain": "api.groq.com",
+      "domains": [
+        "api.groq.com",
+        "console.groq.com",
+        "groq.com"
+      ],
+      "default_policy": "review",
+      "risk_note": "Fast US LPU inference; verify enterprise data-retention terms before sending PII.",
+      "suggested_alternative": "Mistral API (EU) or Groq Enterprise"
+    },
+    {
+      "tool_id": "together-fireworks",
+      "display_name": "Together AI & Fireworks AI",
+      "vendor": "Together / Fireworks (US)",
+      "category": "Model APIs & Gateways",
+      "region": "US",
+      "primary_domain": "api.together.xyz",
+      "domains": [
+        "api.together.xyz",
+        "together.ai",
+        "api.fireworks.ai",
+        "fireworks.ai"
+      ],
+      "default_policy": "review",
+      "risk_note": "US open-weights inference clouds; verify zero-retention flags on API keys.",
+      "suggested_alternative": "Scaleway GenAI or Nebius AI Studio (EU)"
+    },
+    {
+      "tool_id": "replicate-cohere",
+      "display_name": "Replicate, Cohere & Cerebras APIs",
+      "vendor": "Replicate / Cohere / Cerebras",
+      "category": "Model APIs & Gateways",
+      "region": "US",
+      "primary_domain": "api.replicate.com",
+      "domains": [
+        "api.replicate.com",
+        "replicate.com",
+        "api.cohere.ai",
+        "api.cohere.com",
+        "api.cerebras.ai"
+      ],
+      "default_policy": "review",
+      "risk_note": "External model APIs; route through central gateway with DPA and spend caps.",
+      "suggested_alternative": "Central company AI gateway"
+    },
+    {
+      "tool_id": "ollama-registry",
+      "display_name": "Ollama Local Model Registry",
+      "vendor": "Ollama",
+      "category": "Model APIs & Gateways",
+      "region": "GLOBAL",
+      "primary_domain": "registry.ollama.ai",
+      "domains": [
+        "registry.ollama.ai",
+        "ollama.com"
+      ],
+      "default_policy": "review",
+      "risk_note": "Indicates developer workstations or servers pulling local LLM weights; verify approved model licenses and bind 127.0.0.1.",
+      "suggested_alternative": "Internal vetted model registry"
+    }
+  ]
+}
