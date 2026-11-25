@@ -1,0 +1,89 @@
+# Anonymized Shadow-AI Discovery Sensor (GDPR & Works-Council Safe)
+# Receives plain-text DNS query logs or egress firewall syslogs over in-cluster UDP/TCP 5514
+# (or mount a read-only hostPath/PVC log volume and pass -dns-log=/logs/query.log),
+# strips client IPs immediately in RAM, and exports 60-second aggregate AI tool counters.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: inferping-shadow-secret
+  namespace: monitoring
+type: Opaque
+stringData:
+  api-key: "inf_live_replace_with_workspace_key"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inferping-shadow-ai
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: inferping-shadow-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: inferping-shadow-ai
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: inferping-shadow-ai
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: shadow-ai-sensor
+          image: ghcr.io/inferping/inferping-probe:latest
+          args:
+            - "-mode=ai-discovery"
+            - "-syslog-listen=0.0.0.0:5514"
+            - "-region=k8s-eu-cluster"
+            - "-interval=60s"
+          env:
+            - name: INFERPING_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: inferping-shadow-secret
+                  key: api-key
+          ports:
+            - name: syslog-udp
+              containerPort: 5514
+              protocol: UDP
+            - name: syslog-tcp
+              containerPort: 5514
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 15m
+              memory: 24Mi
+            limits:
+              cpu: 150m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inferping-shadow-syslog
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: inferping-shadow-ai
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: inferping-shadow-ai
+  ports:
+    - name: syslog-udp
+      port: 5514
+      targetPort: 5514
+      protocol: UDP
+    - name: syslog-tcp
+      port: 5514
+      targetPort: 5514
+      protocol: TCP

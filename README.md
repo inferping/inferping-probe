@@ -90,8 +90,32 @@ checks:
 ## Deployment
 
 - **Docker Compose**: [`docker-compose.yml`](./docker-compose.yml) (`docker compose up -d`)
-- **Kubernetes**: [`deploy/k8s/deployment.yaml`](./deploy/k8s/deployment.yaml)
+- **Kubernetes (Internal LLM TTFT & MCP Canary)**: [`deploy/k8s/deployment.yaml`](./deploy/k8s/deployment.yaml)
+- **Kubernetes (Anonymized Shadow-AI Discovery + Syslog Service)**: [`deploy/k8s/shadow-ai-discovery.yaml`](./deploy/k8s/shadow-ai-discovery.yaml)
 - **Linux systemd**: [`deploy/systemd/inferping-probe.service`](./deploy/systemd/inferping-probe.service)
+
+### Shadow-AI Discovery Quickstart (Docker & Kubernetes)
+
+```bash
+# 1. Docker: Tail a local DNS resolver query log read-only (Bind9, Unbound, dnsmasq, Pi-hole, AdGuard)
+docker run -d --name inferping-shadow-ai --restart unless-stopped \
+  --read-only --cap-drop=ALL --security-opt=no-new-privileges:true \
+  -v /var/log/named:/logs:ro \
+  -e INFERPING_API_KEY="inf_live_your_workspace_key" \
+  ghcr.io/inferping/inferping-probe:latest \
+  -mode=ai-discovery -dns-log=/logs/query.log -region="hq-amsterdam" -interval=60s
+
+# 2. Docker: Zero-disk UDP/TCP Syslog receiver (Infoblox, FortiGate, Palo Alto, OPNsense)
+docker run -d --name inferping-shadow-syslog --restart unless-stopped \
+  --read-only --cap-drop=ALL --security-opt=no-new-privileges:true \
+  -p 127.0.0.1:5514:5514/udp -p 127.0.0.1:5514:5514/tcp \
+  -e INFERPING_API_KEY="inf_live_your_workspace_key" \
+  ghcr.io/inferping/inferping-probe:latest \
+  -mode=ai-discovery -syslog-listen=0.0.0.0:5514 -region="hq-firewall" -interval=60s
+
+# 3. Kubernetes: Deploy non-root sensor + ClusterIP UDP/TCP 5514 Syslog Service
+kubectl apply -f deploy/k8s/shadow-ai-discovery.yaml
+```
 
 ## Exported OpenTelemetry Metrics (`OTLP/HTTP`)
 
@@ -106,6 +130,7 @@ Each check emits a `ResourceMetrics` entry (`service.name`, `service.group`, `pr
 | `inferping.llm.itl_ms` | Gauge (Double) | `ms` | Streaming LLM Inter-Token Latency |
 | `inferping.ratelimit.remaining_tokens` | Gauge (Int) | `1` | Remaining token quota reported by upstream AI gateway headers |
 | `inferping.mcp.tools_count` | Gauge (Int) | `1` | Number of tools returned by MCP `tools/list` |
+| `inferping.ai.discovery.hits` | Gauge (Int) | `1` | Anonymized 60s DNS/syslog query counter per `ai.tool.id` (zero client IPs) |
 | `net.dns.duration` | Gauge (Double) | `ms` | DNS lookup latency |
 | `net.tls.duration` | Gauge (Double) | `ms` | TLS handshake latency |
 | `http.ttfb.duration` | Gauge (Double) | `ms` | Time to first response byte |
