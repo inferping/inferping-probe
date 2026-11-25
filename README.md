@@ -1,4 +1,8 @@
-# inferping-probe
+# <img src="./logo.svg" width="28" height="28" align="top" alt="InferPing" /> inferping-probe
+
+[![Release](https://img.shields.io/github/v/release/inferping/inferping-probe?color=0EA5E9&label=release)](https://github.com/inferping/inferping-probe/releases)
+[![GHCR Container](https://img.shields.io/badge/ghcr.io-inferping%2Finferping--probe-38BDF8)](https://github.com/inferping/inferping-probe/pkgs/container/inferping-probe)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache%202.0-34D399)](./LICENSE)
 
 Lightweight, zero-dependency, zero-custody internal AI, LLM & Model Context Protocol (`MCP`) synthetic monitoring probe written in pure Go. Runs inside private Kubernetes clusters, GPU VPC subnets, Docker hosts, or corporate LANs and pushes 1-token streaming LLM Time-to-First-Token (`TTFT`), Inter-Token Latency (`ITL`), rate-limit headroom, MCP Streamable HTTP (`2025-03-26`) `tools/list` schema drift, and MCP auth-gate lock checks outbound via standard **OpenTelemetry (`OTLP/HTTP`)**.
 
