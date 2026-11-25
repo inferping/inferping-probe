@@ -8,4 +8,5 @@
 
 ## 2. Commit Security Notes
 
+- **2026-11-25 (`v1.1.0` docs)**: Tightened cross-reference wording to `inferping-dns-collector` to stay strictly factual and technical.
 - **2026-11-25 (`v1.1.0`)**: Separated passive DNS/syslog Shadow-AI counting out into the dedicated [`inferping/inferping-dns-collector`](https://github.com/inferping/inferping-dns-collector) repository so `inferping-probe` remains strictly focused on private VPC LLM `TTFT` and `MCP` synthetic checks.

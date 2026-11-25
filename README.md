@@ -7,7 +7,7 @@
 Lightweight, zero-dependency, zero-custody internal AI gateway, LLM latency, and Model Context Protocol (`MCP`) synthetic monitoring probe written in pure Go. Runs inside private Kubernetes clusters, GPU VPC subnets, or Docker hosts and exports 1-token streaming LLM Time-to-First-Token (`TTFT`), Inter-Token Latency (`ITL`), rate-limit headroom, MCP Streamable HTTP (`2025-03-26`) `tools/list` schema drift, and MCP auth-gate checks via standard **OpenTelemetry (`OTLP/HTTP`)**.
 
 > **Looking for corporate DNS, Firewall Syslog, Loki, Splunk, or Kafka Shadow-AI domain counting?**
-> Use our dedicated, zero-probing collector repository instead: **[`inferping/inferping-dns-collector`](https://github.com/inferping/inferping-dns-collector)** (`ghcr.io/inferping/inferping-dns-collector:latest`), which contains zero active probing or MCP/LLM client code for fast CISO, AD, and Works Council approval.
+> Use our dedicated passive collector repository instead: **[`inferping/inferping-dns-collector`](https://github.com/inferping/inferping-dns-collector)** (`ghcr.io/inferping/inferping-dns-collector:latest`), which contains only read-only log/DNS counting and zero active endpoint probing code.
 
 Built for **[InferPing](https://inferping.eu)** (60-second European AI gateway, MCP security, and Shadow-AI governance watchpost, 100% hosted in the EU) and compatible with **[OTelPing](https://otelping.eu)**, **[Vallocor](https://vallocor.eu)**, and any standard OpenTelemetry Collector (`/v1/metrics`).
 
