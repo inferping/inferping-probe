@@ -21,7 +21,7 @@ import (
 	"github.com/inferping/inferping-probe/internal/otlp"
 )
 
-var version = "1.1.0"
+var version = "1.2.0"
 
 func main() {
 	var (
@@ -34,16 +34,18 @@ func main() {
 		modelFlag        = flag.String("model", "mistral-small-latest", "Model ID when using -mode=llm")
 		serviceNameFlag  = flag.String("service-name", "Internal-AI-Check", "Service monitor name when using -mode")
 		serviceGroupFlag = flag.String("service-group", "", "Optional Service Group name when using -mode")
-		regionFlag       = flag.String("region", "", "Probe region/location identifier")
+		regionFlag       = flag.String("region", "", "Probe region/site identifier (e.g. hq-amsterdam, plant-munich)")
 		authEnvFlag      = flag.String("auth-env", "LLM_API_KEY", "Environment variable holding local LLM/MCP Bearer key")
 		expectToolsFlag  = flag.Int("expect-tools", 1, "Minimum tool count for -mode=mcp")
 		expectHashFlag   = flag.String("expect-schema-hash", "", "Optional 16-hex SHA-256 tool schema lock hash for -mode=mcp")
 		dnsLogFlag       = flag.String("dns-log", "", "Path to DNS resolver or firewall log file for -mode=ai-discovery (strips employee IPs locally)")
+		syslogListenFlag = flag.String("syslog-listen", "", "Optional UDP+TCP syslog listen address (e.g. 127.0.0.1:5514) for zero-disk enterprise Shadow-AI discovery")
+		fromStartFlag    = flag.Bool("from-start", false, "Read existing -dns-log from byte 0 on startup instead of tailing from EOF")
 		airgappedFlag    = flag.Bool("airgapped", false, "Airgapped/offline mode: disable central AI catalogue sync and use strictly the preloaded embedded catalogue (+ optional -catalogue-file)")
 		catalogueURLFlag = flag.String("catalogue-url", "https://app.inferping.eu/v1/ai-catalogue.json", "Central AI tool domain catalogue URL synced every 12h in ai-discovery mode")
 		catalogueFile    = flag.String("catalogue-file", "", "Optional local JSON file with extra AI tool domains to merge into the preloaded catalogue")
 		pushURLFlag      = flag.String("push-url", "https://app.inferping.eu/v1/metrics", "OTLP/HTTP metrics ingest URL for -mode execution")
-		intervalFlag     = flag.Duration("interval", 0, "Continuous interval for -mode execution (e.g. 60s); 0 runs once and exits")
+		intervalFlag     = flag.Duration("interval", 0, "Continuous interval for -mode execution (e.g. 60s); defaults to 60s when -syslog-listen is set")
 	)
 	flag.Parse()
 
@@ -61,8 +63,8 @@ func main() {
 	}
 
 	cleanMode := strings.ToLower(strings.TrimSpace(*modeFlag))
-	if cleanMode == "ai-discovery" || strings.TrimSpace(*dnsLogFlag) != "" {
-		runAIDiscoveryLoop(*dnsLogFlag, *regionFlag, *pushURLFlag, *catalogueURLFlag, *airgappedFlag, *dryRun, *intervalFlag)
+	if cleanMode == "ai-discovery" || strings.TrimSpace(*dnsLogFlag) != "" || strings.TrimSpace(*syslogListenFlag) != "" {
+		runAIDiscoveryLoop(*dnsLogFlag, *syslogListenFlag, *regionFlag, *pushURLFlag, *catalogueURLFlag, *airgappedFlag, *fromStartFlag, *dryRun, *intervalFlag)
 		return
 	}
 
@@ -178,7 +180,7 @@ func main() {
 	}
 }
 
-func runAIDiscoveryLoop(logPath, region, pushURL, catalogueURL string, airgapped, dryRun bool, interval time.Duration) {
+func runAIDiscoveryLoop(logPath, syslogAddr, region, pushURL, catalogueURL string, airgapped, fromStart, dryRun bool, interval time.Duration) {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	if strings.TrimSpace(region) == "" {
@@ -189,10 +191,22 @@ func runAIDiscoveryLoop(logPath, region, pushURL, catalogueURL string, airgapped
 	}
 	apiKey := strings.TrimSpace(os.Getenv("INFERPING_API_KEY"))
 
+	var sysCounter *catalogue.SyslogCounter
+	if strings.TrimSpace(syslogAddr) != "" {
+		sysCounter = catalogue.NewSyslogCounter()
+		if err := sysCounter.ListenAndServe(ctx, syslogAddr); err != nil {
+			log.Fatalf("[ai-discovery] failed binding -syslog-listen %s: %v", syslogAddr, err)
+		}
+		if interval <= 0 {
+			interval = 60 * time.Second
+		}
+	}
+
 	var (
-		lastOffset int64
-		lastSync   time.Time
-		lastETag   string
+		lastOffset  int64
+		initialized bool
+		lastSync    time.Time
+		lastETag    string
 	)
 	maybeSync := func() {
 		if airgapped || strings.TrimSpace(catalogueURL) == "" {
@@ -211,30 +225,47 @@ func runAIDiscoveryLoop(logPath, region, pushURL, catalogueURL string, airgapped
 
 	step := func() bool {
 		maybeSync()
+		counts := make(map[string]int)
 		cleanPath := strings.TrimSpace(logPath)
-		if cleanPath == "" {
-			log.Printf("[ai-discovery] error: missing -dns-log path")
+		if cleanPath != "" {
+			f, err := os.Open(cleanPath)
+			if err != nil {
+				log.Printf("[ai-discovery] error opening %s: %v", cleanPath, err)
+				return false
+			}
+			st, err := f.Stat()
+			if err != nil {
+				f.Close()
+				return false
+			}
+			if !initialized && !fromStart && interval > 0 && st.Size() > 512*1024 {
+				lastOffset = st.Size()
+				initialized = true
+				f.Close()
+			} else {
+				initialized = true
+				if st.Size() < lastOffset {
+					lastOffset = 0
+				}
+				if lastOffset > 0 {
+					_, _ = f.Seek(lastOffset, 0)
+				}
+				fc, consumed := catalogue.ScanLogReaderWithBytes(f, 256*1024*1024)
+				lastOffset += consumed
+				f.Close()
+				for k, v := range fc {
+					counts[k] += v
+				}
+			}
+		} else if sysCounter == nil {
+			log.Printf("[ai-discovery] error: specify -dns-log or -syslog-listen")
 			return false
 		}
-		f, err := os.Open(cleanPath)
-		if err != nil {
-			log.Printf("[ai-discovery] error opening %s: %v", cleanPath, err)
-			return false
+		if sysCounter != nil {
+			for k, v := range sysCounter.Drain() {
+				counts[k] += v
+			}
 		}
-		st, err := f.Stat()
-		if err != nil {
-			f.Close()
-			return false
-		}
-		if st.Size() < lastOffset {
-			lastOffset = 0
-		}
-		if lastOffset > 0 {
-			_, _ = f.Seek(lastOffset, 0)
-		}
-		counts := catalogue.ScanLogReader(f)
-		lastOffset = st.Size()
-		f.Close()
 
 		cleanPush := strings.TrimSpace(pushURL)
 		if !dryRun && cleanPush != "" && len(counts) > 0 && (!airgapped || !strings.Contains(cleanPush, "inferping.eu")) {
@@ -244,6 +275,7 @@ func runAIDiscoveryLoop(logPath, region, pushURL, catalogueURL string, airgapped
 			"mode":                    "ai-discovery",
 			"passed":                  true,
 			"airgapped":               airgapped,
+			"region":                  region,
 			"catalogue_version":       catalogue.Version(),
 			"catalogue_domains":       catalogue.DomainCount(),
 			"anonymized_tools_active": len(counts),
@@ -260,7 +292,9 @@ func runAIDiscoveryLoop(logPath, region, pushURL, catalogueURL string, airgapped
 		}
 		return
 	}
-	step()
+	if sysCounter == nil {
+		step()
+	}
 	t := time.NewTicker(interval)
 	defer t.Stop()
 	for {

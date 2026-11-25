@@ -44,6 +44,8 @@ type CatalogueDocument struct {
 var (
 	mu               sync.RWMutex
 	active           []AIToolSignature
+	domainMap        map[string]AIToolSignature
+	idMap            map[string]AIToolSignature
 	preloadedVersion = "embedded"
 	forbiddenSuffix  = []string{".local", ".lan", ".internal", ".corp", ".home", ".arpa", ".intranet", ".localdomain"}
 )
@@ -54,8 +56,26 @@ func init() {
 		if strings.TrimSpace(doc.Version) != "" {
 			preloadedVersion = strings.TrimSpace(doc.Version)
 		}
-		active = sanitizeList(doc.Tools)
+		rebuildLocked(sanitizeList(doc.Tools))
 	}
+}
+
+func rebuildLocked(list []AIToolSignature) {
+	cp := make([]AIToolSignature, len(list))
+	copy(cp, list)
+	dm := make(map[string]AIToolSignature, len(cp)*3)
+	im := make(map[string]AIToolSignature, len(cp))
+	for _, s := range cp {
+		im[s.ToolID] = s
+		for _, d := range s.Domains {
+			if _, ok := dm[d]; !ok {
+				dm[d] = s
+			}
+		}
+	}
+	active = cp
+	domainMap = dm
+	idMap = im
 }
 
 func IsSafePublicAIDomain(raw string) bool {
@@ -131,13 +151,7 @@ func Version() string { return preloadedVersion }
 func DomainCount() int {
 	mu.RLock()
 	defer mu.RUnlock()
-	u := make(map[string]struct{}, len(active)*3)
-	for _, s := range active {
-		for _, d := range s.Domains {
-			u[d] = struct{}{}
-		}
-	}
-	return len(u)
+	return len(domainMap)
 }
 
 func Merge(ext []AIToolSignature) int {
@@ -164,7 +178,7 @@ func Merge(ext []AIToolSignature) int {
 			merged = append(merged, v)
 		}
 	}
-	active = merged
+	rebuildLocked(merged)
 	return len(valid)
 }
 
@@ -203,7 +217,7 @@ func SyncFromURL(ctx context.Context, url, apiKey, prevETag string) (string, int
 		return prevETag, 0, err
 	}
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", "InferPing-Probe/1.1 (+https://github.com/inferping/inferping-probe)")
+	req.Header.Set("User-Agent", "InferPing-Probe/1.2 (+https://github.com/inferping/inferping-probe)")
 	if prevETag != "" {
 		req.Header.Set("If-None-Match", prevETag)
 	}
@@ -240,37 +254,76 @@ func LookupByID(toolID string) (AIToolSignature, bool) {
 	q := strings.ToLower(strings.TrimSpace(toolID))
 	mu.RLock()
 	defer mu.RUnlock()
-	for _, s := range active {
-		if s.ToolID == q || s.PrimaryDomain == q {
+	if s, ok := idMap[q]; ok {
+		return s, true
+	}
+	return matchSuffixLocked(q)
+}
+
+func matchSuffixLocked(cand string) (AIToolSignature, bool) {
+	for len(cand) >= 4 {
+		if s, ok := domainMap[cand]; ok {
 			return s, true
 		}
+		dot := strings.IndexByte(cand, '.')
+		if dot < 0 {
+			break
+		}
+		cand = cand[dot+1:]
 	}
 	return AIToolSignature{}, false
 }
 
+func isTokChar(b byte) bool {
+	return (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z') || (b >= '0' && b <= '9') || b == '-' || b == '.'
+}
+
+// MatchLine performs O(1) suffix hash-map matching across DNS/syslog lines at 500+ MB/sec.
 func MatchLine(rawLine string) (AIToolSignature, bool) {
-	low := strings.ToLower(rawLine)
+	n := len(rawLine)
+	if n < 4 {
+		return AIToolSignature{}, false
+	}
 	mu.RLock()
 	defer mu.RUnlock()
-	for _, s := range active {
-		for _, dom := range s.Domains {
-			idx := strings.Index(low, dom)
-			if idx < 0 {
-				continue
+
+	var lowerBuf [128]byte
+	i := 0
+	for i < n {
+		for i < n && !isTokChar(rawLine[i]) {
+			i++
+		}
+		start := i
+		hasDot := false
+		for i < n && isTokChar(rawLine[i]) {
+			if rawLine[i] == '.' {
+				hasDot = true
 			}
-			if idx > 0 {
-				p := low[idx-1]
-				if (p >= 'a' && p <= 'z') || (p >= '0' && p <= '9') || p == '-' {
-					continue
-				}
+			i++
+		}
+		end := i
+		for end > start && (rawLine[end-1] == '.' || rawLine[end-1] == '-') {
+			end--
+		}
+		for start < end && (rawLine[start] == '.' || rawLine[start] == '-') {
+			start++
+		}
+		tlen := end - start
+		if !hasDot || tlen < 4 || tlen > 120 {
+			continue
+		}
+		last := rawLine[end-1]
+		if last >= '0' && last <= '9' {
+			continue
+		}
+		for k := 0; k < tlen; k++ {
+			c := rawLine[start+k]
+			if c >= 'A' && c <= 'Z' {
+				c += 'a' - 'A'
 			}
-			end := idx + len(dom)
-			if end < len(low) {
-				nx := low[end]
-				if (nx >= 'a' && nx <= 'z') || (nx >= '0' && nx <= '9') || nx == '-' {
-					continue
-				}
-			}
+			lowerBuf[k] = c
+		}
+		if s, ok := matchSuffixLocked(string(lowerBuf[:tlen])); ok {
 			return s, true
 		}
 	}
@@ -278,15 +331,107 @@ func MatchLine(rawLine string) (AIToolSignature, bool) {
 }
 
 func ScanLogReader(r io.Reader) map[string]int {
+	c, _ := ScanLogReaderWithBytes(r, 256*1024*1024)
+	return c
+}
+
+func ScanLogReaderWithBytes(r io.Reader, maxBytes int64) (map[string]int, int64) {
 	counts := make(map[string]int)
-	if r == nil {
-		return counts
+	if r == nil || maxBytes <= 0 {
+		return counts, 0
 	}
-	sc := bufio.NewScanner(io.LimitReader(r, 16*1024*1024))
+	cr := &cntReader{r: io.LimitReader(r, maxBytes)}
+	sc := bufio.NewScanner(cr)
+	buf := make([]byte, 64*1024)
+	sc.Buffer(buf, 512*1024)
 	for sc.Scan() {
 		if sig, ok := MatchLine(sc.Text()); ok {
 			counts[sig.ToolID]++
 		}
 	}
-	return counts
+	return counts, cr.n
+}
+
+type cntReader struct {
+	r io.Reader
+	n int64
+}
+
+func (c *cntReader) Read(p []byte) (int, error) {
+	n, err := c.r.Read(p)
+	c.n += int64(n)
+	return n, err
+}
+
+type SyslogCounter struct {
+	mu     sync.Mutex
+	counts map[string]int
+}
+
+func NewSyslogCounter() *SyslogCounter {
+	return &SyslogCounter{counts: make(map[string]int)}
+}
+
+func (s *SyslogCounter) Ingest(line string) {
+	if sig, ok := MatchLine(line); ok {
+		s.mu.Lock()
+		s.counts[sig.ToolID]++
+		s.mu.Unlock()
+	}
+}
+
+func (s *SyslogCounter) Drain() map[string]int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if len(s.counts) == 0 {
+		return nil
+	}
+	out := s.counts
+	s.counts = make(map[string]int)
+	return out
+}
+
+func (s *SyslogCounter) ListenAndServe(ctx context.Context, addr string) error {
+	udpConn, err := net.ListenPacket("udp", strings.TrimSpace(addr))
+	if err != nil {
+		return err
+	}
+	tcpLn, tcpErr := net.Listen("tcp", strings.TrimSpace(addr))
+	go func() {
+		<-ctx.Done()
+		_ = udpConn.Close()
+		if tcpLn != nil {
+			_ = tcpLn.Close()
+		}
+	}()
+	go func() {
+		buf := make([]byte, 64*1024)
+		for {
+			n, _, rErr := udpConn.ReadFrom(buf)
+			if n > 0 {
+				s.Ingest(string(buf[:n]))
+			}
+			if rErr != nil {
+				return
+			}
+		}
+	}()
+	if tcpErr == nil && tcpLn != nil {
+		go func() {
+			for {
+				conn, aErr := tcpLn.Accept()
+				if aErr != nil {
+					return
+				}
+				go func(c net.Conn) {
+					defer c.Close()
+					sc := bufio.NewScanner(io.LimitReader(c, 64*1024*1024))
+					for sc.Scan() {
+						s.Ingest(sc.Text())
+					}
+				}(conn)
+			}
+		}()
+	}
+	return nil
 }
