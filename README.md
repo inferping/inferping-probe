@@ -4,7 +4,10 @@
 [![GHCR Container](https://img.shields.io/badge/ghcr.io-inferping%2Finferping--probe-38BDF8)](https://github.com/inferping/inferping-probe/pkgs/container/inferping-probe)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache%202.0-34D399)](./LICENSE)
 
-Lightweight, zero-dependency, zero-custody internal AI, LLM, Model Context Protocol (`MCP`), and **Anonymized Shadow-AI Discovery** probe written in pure Go. Runs inside private Kubernetes clusters, GPU VPC subnets, Docker hosts, or corporate LANs (including **100% airgapped / offline networks**) and exports 1-token streaming LLM Time-to-First-Token (`TTFT`), Inter-Token Latency (`ITL`), rate-limit headroom, MCP Streamable HTTP (`2025-03-26`) `tools/list` schema drift, MCP auth-gate lock checks, and anonymized Shadow-AI tool counters via standard **OpenTelemetry (`OTLP/HTTP`)**.
+Lightweight, zero-dependency, zero-custody internal AI gateway, LLM latency, and Model Context Protocol (`MCP`) synthetic monitoring probe written in pure Go. Runs inside private Kubernetes clusters, GPU VPC subnets, or Docker hosts and exports 1-token streaming LLM Time-to-First-Token (`TTFT`), Inter-Token Latency (`ITL`), rate-limit headroom, MCP Streamable HTTP (`2025-03-26`) `tools/list` schema drift, and MCP auth-gate checks via standard **OpenTelemetry (`OTLP/HTTP`)**.
+
+> **Looking for corporate DNS, Firewall Syslog, Loki, Splunk, or Kafka Shadow-AI domain counting?**
+> Use our dedicated, zero-probing collector repository instead: **[`inferping/inferping-dns-collector`](https://github.com/inferping/inferping-dns-collector)** (`ghcr.io/inferping/inferping-dns-collector:latest`), which contains zero active probing or MCP/LLM client code for fast CISO, AD, and Works Council approval.
 
 Built for **[InferPing](https://inferping.eu)** (60-second European AI gateway, MCP security, and Shadow-AI governance watchpost, 100% hosted in the EU) and compatible with **[OTelPing](https://otelping.eu)**, **[Vallocor](https://vallocor.eu)**, and any standard OpenTelemetry Collector (`/v1/metrics`).
 
@@ -19,7 +22,6 @@ Built for **[InferPing](https://inferping.eu)** (60-second European AI gateway, 
   3. **`mcp-gate`**: Sends an unauthenticated JSON-RPC 2.0 `initialize` request and passes only when the MCP server properly rejects unauthenticated callers (`HTTP 401`, `403`, `404`, or `405`). Alerts immediately if an MCP server ever responds `200 OK` without authentication.
   4. **`http`**: Standard HTTP/HTTPS endpoint check with W3C `traceparent`, DNS/TCP/TLS/TTFB breakdown, X.509 certificate expiry tracking, and custom internal CA support (`tls_ca_file`).
   5. **`tcp` / `dns`**: Raw TCP/TLS port checks (for internal Qdrant, Milvus, Redis, PostgreSQL) and split-horizon DNS checks.
-  6. **`ai-discovery` (GDPR & Works-Council-Safe Shadow-AI Inventory + Syslog + Airgapped Ready)**: Tails office DNS resolver logs (`-dns-log=...`) or listens on zero-disk UDP/TCP syslog (`-syslog-listen=127.0.0.1:5514` for Infoblox, FortiGate, Palo Alto, OPNsense, Unbound) at `500+ MB/sec` via `O(1)` suffix hash-map lookups against **174+ curated AI domains** ([`catalogue/ai-tools.json`](./catalogue/ai-tools.json) compiled into the binary AND auto-synced every 12h from `https://app.inferping.eu/v1/ai-catalogue.json` unless `-airgapped` is passed), strips employee client IPs in memory immediately, and exports 60s counters (`inferping.ai.discovery.hits`).
 
 ## Quickstart (Zero Config File)
 
@@ -34,7 +36,7 @@ export INFERPING_TARGETS="vLLM-Internal=llm://https://vllm.internal:8443/v1/chat
 go run github.com/inferping/inferping-probe/cmd/inferping-probe@latest
 ```
 
- Or run the multi-arch distroless container from GitHub Container Registry:
+Or run the multi-arch distroless container from GitHub Container Registry:
 
 ```bash
 docker run -d --name inferping-probe --restart unless-stopped \
@@ -91,31 +93,7 @@ checks:
 
 - **Docker Compose**: [`docker-compose.yml`](./docker-compose.yml) (`docker compose up -d`)
 - **Kubernetes (Internal LLM TTFT & MCP Canary)**: [`deploy/k8s/deployment.yaml`](./deploy/k8s/deployment.yaml)
-- **Kubernetes (Anonymized Shadow-AI Discovery + Syslog Service)**: [`deploy/k8s/shadow-ai-discovery.yaml`](./deploy/k8s/shadow-ai-discovery.yaml)
 - **Linux systemd**: [`deploy/systemd/inferping-probe.service`](./deploy/systemd/inferping-probe.service)
-
-### Shadow-AI Discovery Quickstart (Docker & Kubernetes)
-
-```bash
-# 1. Docker: Tail a local DNS resolver query log read-only (Bind9, Unbound, dnsmasq, Pi-hole, AdGuard)
-docker run -d --name inferping-shadow-ai --restart unless-stopped \
-  --read-only --cap-drop=ALL --security-opt=no-new-privileges:true \
-  -v /var/log/named:/logs:ro \
-  -e INFERPING_API_KEY="inf_live_your_workspace_key" \
-  ghcr.io/inferping/inferping-probe:latest \
-  -mode=ai-discovery -dns-log=/logs/query.log -region="hq-amsterdam" -interval=60s
-
-# 2. Docker: Zero-disk UDP/TCP Syslog receiver (Infoblox, FortiGate, Palo Alto, OPNsense)
-docker run -d --name inferping-shadow-syslog --restart unless-stopped \
-  --read-only --cap-drop=ALL --security-opt=no-new-privileges:true \
-  -p 127.0.0.1:5514:5514/udp -p 127.0.0.1:5514:5514/tcp \
-  -e INFERPING_API_KEY="inf_live_your_workspace_key" \
-  ghcr.io/inferping/inferping-probe:latest \
-  -mode=ai-discovery -syslog-listen=0.0.0.0:5514 -region="hq-firewall" -interval=60s
-
-# 3. Kubernetes: Deploy non-root sensor + ClusterIP UDP/TCP 5514 Syslog Service
-kubectl apply -f deploy/k8s/shadow-ai-discovery.yaml
-```
 
 ## Exported OpenTelemetry Metrics (`OTLP/HTTP`)
 
@@ -130,7 +108,6 @@ Each check emits a `ResourceMetrics` entry (`service.name`, `service.group`, `pr
 | `inferping.llm.itl_ms` | Gauge (Double) | `ms` | Streaming LLM Inter-Token Latency |
 | `inferping.ratelimit.remaining_tokens` | Gauge (Int) | `1` | Remaining token quota reported by upstream AI gateway headers |
 | `inferping.mcp.tools_count` | Gauge (Int) | `1` | Number of tools returned by MCP `tools/list` |
-| `inferping.ai.discovery.hits` | Gauge (Int) | `1` | Anonymized 60s DNS/syslog query counter per `ai.tool.id` (zero client IPs) |
 | `net.dns.duration` | Gauge (Double) | `ms` | DNS lookup latency |
 | `net.tls.duration` | Gauge (Double) | `ms` | TLS handshake latency |
 | `http.ttfb.duration` | Gauge (Double) | `ms` | Time to first response byte |
@@ -138,6 +115,7 @@ Each check emits a `ResourceMetrics` entry (`service.name`, `service.group`, `pr
 
 ## Related European Platforms
 
+- **[`inferping-dns-collector`](https://github.com/inferping/inferping-dns-collector)**: Dedicated zero-PII passive corporate DNS, TLS Syslog, Loki, Splunk, and Kafka domain counter for Shadow-AI Governance.
 - **[InferPing (`inferping.eu`)](https://inferping.eu)**: 60-second European AI gateway, 1-token LLM TTFT, `#mcp-gate` security monitoring (`Pro EUR 39/mo`), and anonymized Shadow-AI governance (`Governance EUR 149/mo`).
 - **[OTelPing (`otelping.eu`)](https://otelping.eu)** & **[`otelping-probe`](https://github.com/otelping/otelping-probe)**: 10-second European web, load-balancer, DNS, and cron uptime monitoring with native OpenTelemetry (`EUR 39/mo`).
 - **[Vallocor (`vallocor.eu`)](https://vallocor.eu)**: Independent European cybersecurity watchpost (`Outpost` / `Sentinel` / `Bastion`) and on-site `Vallocor Pulse` sensor alongside SMEs and their IT partners.

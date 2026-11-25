@@ -1,7 +1,6 @@
 FROM golang:1.23-alpine AS builder
 WORKDIR /src
 COPY go.mod ./
-COPY catalogue ./catalogue
 COPY cmd ./cmd
 COPY internal ./internal
 ARG VERSION=1.1.0

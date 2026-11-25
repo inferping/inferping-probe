@@ -1,13 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -15,13 +13,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/inferping/inferping-probe/catalogue"
 	"github.com/inferping/inferping-probe/internal/checker"
 	"github.com/inferping/inferping-probe/internal/config"
 	"github.com/inferping/inferping-probe/internal/otlp"
 )
 
-var version = "1.2.0"
+var version = "1.1.0"
 
 func main() {
 	var (
@@ -29,43 +26,28 @@ func main() {
 		runOnce          = flag.Bool("once", false, "Run all configured checks once, push OTLP metrics, and exit")
 		dryRun           = flag.Bool("dry-run", false, "Run checks and print results without pushing to the OTLP endpoint")
 		showVersion      = flag.Bool("version", false, "Print version and exit")
-		modeFlag         = flag.String("mode", "", "Direct single-mode execution: ai-discovery, llm, mcp, mcp-gate, or http")
+		modeFlag         = flag.String("mode", "", "Direct single-mode execution: llm, mcp, mcp-gate, or http")
 		urlFlag          = flag.String("url", "", "Target URL when using -mode=llm|mcp|mcp-gate|http")
 		modelFlag        = flag.String("model", "mistral-small-latest", "Model ID when using -mode=llm")
 		serviceNameFlag  = flag.String("service-name", "Internal-AI-Check", "Service monitor name when using -mode")
 		serviceGroupFlag = flag.String("service-group", "", "Optional Service Group name when using -mode")
-		regionFlag       = flag.String("region", "", "Probe region/site identifier (e.g. hq-amsterdam, plant-munich)")
+		regionFlag       = flag.String("region", "", "Probe region/site identifier (e.g. k8s-eu-west, gpu-vpc-01)")
 		authEnvFlag      = flag.String("auth-env", "LLM_API_KEY", "Environment variable holding local LLM/MCP Bearer key")
 		expectToolsFlag  = flag.Int("expect-tools", 1, "Minimum tool count for -mode=mcp")
 		expectHashFlag   = flag.String("expect-schema-hash", "", "Optional 16-hex SHA-256 tool schema lock hash for -mode=mcp")
-		dnsLogFlag       = flag.String("dns-log", "", "Path to DNS resolver or firewall log file for -mode=ai-discovery (strips employee IPs locally)")
-		syslogListenFlag = flag.String("syslog-listen", "", "Optional UDP+TCP syslog listen address (e.g. 127.0.0.1:5514) for zero-disk enterprise Shadow-AI discovery")
-		fromStartFlag    = flag.Bool("from-start", false, "Read existing -dns-log from byte 0 on startup instead of tailing from EOF")
-		airgappedFlag    = flag.Bool("airgapped", false, "Airgapped/offline mode: disable central AI catalogue sync and use strictly the preloaded embedded catalogue (+ optional -catalogue-file)")
-		catalogueURLFlag = flag.String("catalogue-url", "https://app.inferping.eu/v1/ai-catalogue.json", "Central AI tool domain catalogue URL synced every 12h in ai-discovery mode")
-		catalogueFile    = flag.String("catalogue-file", "", "Optional local JSON file with extra AI tool domains to merge into the preloaded catalogue")
 		pushURLFlag      = flag.String("push-url", "https://app.inferping.eu/v1/metrics", "OTLP/HTTP metrics ingest URL for -mode execution")
-		intervalFlag     = flag.Duration("interval", 0, "Continuous interval for -mode execution (e.g. 60s); defaults to 60s when -syslog-listen is set")
+		intervalFlag     = flag.Duration("interval", 0, "Continuous interval for -mode execution (e.g. 60s)")
 	)
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Printf("inferping-probe v%s (https://github.com/inferping/inferping-probe, preloaded AI catalogue %s with %d domains)\n", version, catalogue.Version(), catalogue.DomainCount())
+		fmt.Printf("inferping-probe v%s (https://github.com/inferping/inferping-probe)\n", version)
 		return
-	}
-
-	if strings.TrimSpace(*catalogueFile) != "" {
-		if n, lErr := catalogue.LoadFile(*catalogueFile); lErr != nil {
-			log.Printf("[inferping-probe] warning loading -catalogue-file: %v", lErr)
-		} else {
-			log.Printf("[inferping-probe] merged %d custom AI tool entries from %s", n, *catalogueFile)
-		}
 	}
 
 	cleanMode := strings.ToLower(strings.TrimSpace(*modeFlag))
-	if cleanMode == "ai-discovery" || strings.TrimSpace(*dnsLogFlag) != "" || strings.TrimSpace(*syslogListenFlag) != "" {
-		runAIDiscoveryLoop(*dnsLogFlag, *syslogListenFlag, *regionFlag, *pushURLFlag, *catalogueURLFlag, *airgappedFlag, *fromStartFlag, *dryRun, *intervalFlag)
-		return
+	if cleanMode == "ai-discovery" {
+		log.Fatalf("[inferping-probe] passive DNS/log Shadow-AI counting now lives in the dedicated zero-probing collector: https://github.com/inferping/inferping-dns-collector")
 	}
 
 	if cleanMode != "" && strings.TrimSpace(*urlFlag) != "" {
@@ -180,187 +162,6 @@ func main() {
 	}
 }
 
-func runAIDiscoveryLoop(logPath, syslogAddr, region, pushURL, catalogueURL string, airgapped, fromStart, dryRun bool, interval time.Duration) {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-	if strings.TrimSpace(region) == "" {
-		region = strings.TrimSpace(os.Getenv("INFERPING_REGION"))
-		if region == "" {
-			region = "office-vlan"
-		}
-	}
-	apiKey := strings.TrimSpace(os.Getenv("INFERPING_API_KEY"))
-
-	var sysCounter *catalogue.SyslogCounter
-	if strings.TrimSpace(syslogAddr) != "" {
-		sysCounter = catalogue.NewSyslogCounter()
-		if err := sysCounter.ListenAndServe(ctx, syslogAddr); err != nil {
-			log.Fatalf("[ai-discovery] failed binding -syslog-listen %s: %v", syslogAddr, err)
-		}
-		if interval <= 0 {
-			interval = 60 * time.Second
-		}
-	}
-
-	var (
-		lastOffset  int64
-		initialized bool
-		lastSync    time.Time
-		lastETag    string
-	)
-	maybeSync := func() {
-		if airgapped || strings.TrimSpace(catalogueURL) == "" {
-			return
-		}
-		if !lastSync.IsZero() && time.Since(lastSync) < 12*time.Hour {
-			return
-		}
-		sctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-		defer cancel()
-		if etag, _, err := catalogue.SyncFromURL(sctx, catalogueURL, apiKey, lastETag); err == nil {
-			lastETag = etag
-		}
-		lastSync = time.Now()
-	}
-
-	step := func() bool {
-		maybeSync()
-		counts := make(map[string]int)
-		cleanPath := strings.TrimSpace(logPath)
-		if cleanPath != "" {
-			f, err := os.Open(cleanPath)
-			if err != nil {
-				log.Printf("[ai-discovery] error opening %s: %v", cleanPath, err)
-				return false
-			}
-			st, err := f.Stat()
-			if err != nil {
-				f.Close()
-				return false
-			}
-			if !initialized && !fromStart && interval > 0 && st.Size() > 512*1024 {
-				lastOffset = st.Size()
-				initialized = true
-				f.Close()
-			} else {
-				initialized = true
-				if st.Size() < lastOffset {
-					lastOffset = 0
-				}
-				if lastOffset > 0 {
-					_, _ = f.Seek(lastOffset, 0)
-				}
-				fc, consumed := catalogue.ScanLogReaderWithBytes(f, 256*1024*1024)
-				lastOffset += consumed
-				f.Close()
-				for k, v := range fc {
-					counts[k] += v
-				}
-			}
-		} else if sysCounter == nil {
-			log.Printf("[ai-discovery] error: specify -dns-log or -syslog-listen")
-			return false
-		}
-		if sysCounter != nil {
-			for k, v := range sysCounter.Drain() {
-				counts[k] += v
-			}
-		}
-
-		cleanPush := strings.TrimSpace(pushURL)
-		if !dryRun && cleanPush != "" && len(counts) > 0 && (!airgapped || !strings.Contains(cleanPush, "inferping.eu")) {
-			_ = pushDiscoveryOTLP(ctx, cleanPush, apiKey, region, counts)
-		}
-		out, _ := json.MarshalIndent(map[string]any{
-			"mode":                    "ai-discovery",
-			"passed":                  true,
-			"airgapped":               airgapped,
-			"region":                  region,
-			"catalogue_version":       catalogue.Version(),
-			"catalogue_domains":       catalogue.DomainCount(),
-			"anonymized_tools_active": len(counts),
-			"tool_hits":               counts,
-			"pii_stripped":            true,
-		}, "", "  ")
-		fmt.Println(string(out))
-		return true
-	}
-
-	if interval <= 0 {
-		if !step() {
-			os.Exit(1)
-		}
-		return
-	}
-	if sysCounter == nil {
-		step()
-	}
-	t := time.NewTicker(interval)
-	defer t.Stop()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-t.C:
-			step()
-		}
-	}
-}
-
-func pushDiscoveryOTLP(ctx context.Context, pushURL, apiKey, region string, counts map[string]int) error {
-	var dps []map[string]any
-	for toolID, hits := range counts {
-		if hits <= 0 {
-			continue
-		}
-		dom := toolID
-		if sig, ok := catalogue.LookupByID(toolID); ok {
-			dom = sig.PrimaryDomain
-		}
-		dps = append(dps, map[string]any{
-			"asDouble": float64(hits),
-			"attributes": []map[string]any{
-				{"key": "ai.tool.id", "value": map[string]string{"stringValue": toolID}},
-				{"key": "ai.tool.domain", "value": map[string]string{"stringValue": dom}},
-			},
-		})
-	}
-	if len(dps) == 0 {
-		return nil
-	}
-	payload := map[string]any{
-		"resourceMetrics": []map[string]any{{
-			"resource": map[string]any{
-				"attributes": []map[string]any{
-					{"key": "service.name", "value": map[string]string{"stringValue": "inferping-ai-discovery"}},
-					{"key": "probe.region", "value": map[string]string{"stringValue": region}},
-				},
-			},
-			"scopeMetrics": []map[string]any{{
-				"metrics": []map[string]any{{
-					"name":  "inferping.ai.discovery.hits",
-					"gauge": map[string]any{"dataPoints": dps},
-				}},
-			}},
-		}},
-	}
-	raw, _ := json.Marshal(payload)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, pushURL, bytes.NewReader(raw))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	if apiKey != "" {
-		req.Header.Set("Authorization", "Bearer "+apiKey)
-	}
-	resp, err := (&http.Client{Timeout: 10 * time.Second}).Do(req)
-	if err != nil {
-		return err
-	}
-	resp.Body.Close()
-	return nil
-}
-
 func runDirectCheckLoop(mode, targetURL, model, serviceName, serviceGroup, region, authEnv string, expectTools int, expectHash, pushURL string, dryRun bool, interval time.Duration) {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -387,7 +188,9 @@ func runDirectCheckLoop(mode, targetURL, model, serviceName, serviceGroup, regio
 	step := func() bool {
 		r := checker.Run(ctx, chk)
 		if !dryRun && strings.TrimSpace(pushURL) != "" {
-			_ = exp.Export(ctx, []checker.Result{r})
+			if err := exp.Export(ctx, []checker.Result{r}); err != nil {
+				log.Printf("[OTLP] export warning: %v", err)
+			}
 		}
 		out, _ := json.MarshalIndent(r, "", "  ")
 		fmt.Println(string(out))
